@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loop Halaman</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f2f2f2;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+#startPage{
+    background:white;
+    width:500px;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,.2);
+    text-align:center;
+}
+
+#quizPage{
+    background:white;
+    width:500px;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,.2);
+    text-align:center;
+}
+
+#resultPage{
+    background:white;
+    width:500px;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,.2);
+    text-align:center;
+}
+
+input{
+    width:100px;
+    padding:8px;
+    font-size:18px;
+}
+
+button{
+    padding:10px 20px;
+    margin:10px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+#page{
+    margin-top:30px;
+    font-size:30px;
+    font-weight:bold;
+}
+
+#status{
+    margin-top:10px;
+    color:gray;
+}
+
+table{
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td{
+    border: 1px solid black;
+    padding: 10px;
+    text-align: center;
+}
+
+th{
+    background-color: #f2f2f2;
+}
+</style>
+
+</head>
+<body>
+
+<div id="startPage">
+
+    <h2>Masukkan Jumlah Soal</h2>
+
+    <input type="number" id="totalQuestion" min="1">
+    
+    <hr>
+
+    <h2>Masukkan Rentang Perkalian</h2>
+    <p>contoh: 2 - 9</p>
+    <input type="number" id="minimumRange">
+    <span> - </span>
+    <input type="number" id="maximumRange" min="1">
+
+    <hr>
+
+    <button onclick="controlPanel()">Mulai</button>
+
+    <!-- <button onclick="back()">⬅ Back</button>
+
+    <button onclick="next()">Next ➡</button> -->
+
+</div>
+
+<div id="quizPage" style="display:none;">
+
+    <h1 id="question">halo ini halaman soal</h1>
+    <input type="number" id="answer">
+    <button onclick="next()">Enter</button>
+
+</div>
+
+
+<div id="resultPage" style="display:none;">
+    <h1 id="correct"></h1>
+    <h1 id="wrong"></h1>
+    <button onclick="restart()">Main Lagi</button>
+    <button onclick="tableResult()">Lihat Tabel Hasil</button>
+</div>
+
+<div id="tableResult" style="display:none;">
+    <table border="1">
+    <thead>
+        <tr>
+            <th>No</th>
+            <th>Soal</th>
+            <th>Jawaban</th>
+        </tr>
+    </thead>
+    <tbody id="tableQuestion"></tbody>
+</table>
+
+<button onclick="restart()">Main Lagi</button>
+</div>
+
+<script type="module" src="main.js"></script>
+<!-- <script>
+
+let questionList = [];
+let productList = [];
+let answerHistory = {}; 
+let currentQuestion = 0;
+let totalQuestion;
+let minimumRange;
+let maximumRange;
+
+
+function restart() {
+    location.reload();
+}
+
+function errorCheck() { //input
+    if(minimumRange < maximumRange){
+        document.getElementById("startPage").style.display = "none";
+        document.getElementById("quizPage").style.display = "block";
+    }else{
+            alert("Masukkan rentang angka yang benar");
+            return;
+    }
+}
+
+function generateQuestion(totalQuestion, minimumRange, maximumRange) {
+    let firstFactor = [];
+    let secondFactor = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+    
+
+    for(let i = minimumRange; i <= maximumRange; i++){ //push first factor kedalam array (range number)
+        firstFactor.push(i);
+    }
+    
+    if(maximumRange > 10) { //push second factor kalau dikali 2
+        for(let i = 10; i <= maximumRange; i++){
+            secondFactor.push(i);
+        }
+    }
+    
+    for(let i = 0; i < totalQuestion; i++){
+        const firstFactorLength = firstFactor.length;
+        const secondFactorLength = secondFactor.length;
+        const questionLength = questionList.length;
+        let isDuplicate;
+
+        const pickRandomFirstFactor = Math.floor(Math.random() * firstFactorLength); //ini ngambil random by index array
+        const pickRandomSecondFactor = Math.floor(Math.random() * secondFactorLength); //ini ngambil random by index array
+
+        const question = `${firstFactor[pickRandomFirstFactor]} * ${secondFactor[pickRandomSecondFactor]}`;
+        const reverseQuestion = `${secondFactor[pickRandomSecondFactor]} * ${firstFactor[pickRandomFirstFactor]}`;
+
+        const result = firstFactor[pickRandomFirstFactor] * secondFactor[pickRandomSecondFactor];
+
+        for(let i = 0; i < questionLength; i++){
+            if(question === questionList[i] || reverseQuestion === questionList[i]){
+                isDuplicate = true
+                break;
+            } else{
+                isDuplicate = false
+            }
+        }
+        if(isDuplicate){
+            i--;
+        } else{
+            questionList.push(question);
+            productList.push(result);
+        }
+    }
+    
+    return questionList;
+}
+
+function displayQuestion() {
+    
+   return questionList[currentQuestion]; //nanti ini ditampilkan ke layar
+    
+}
+
+function checkResult(answer) {
+    if(answer /*dari html */ === productList[currentQuestion]){
+        answerHistory[questionList[currentQuestion]] = true;
+    }else{
+        answerHistory[questionList[currentQuestion]] = false;
+    }
+}
+
+function controlPanel() {
+    totalQuestion = parseInt(document.getElementById("totalQuestion").value);
+    minimumRange = parseInt(document.getElementById("minimumRange").value);
+    maximumRange = parseInt(document.getElementById("maximumRange").value);
+
+    errorCheck();
+    generateQuestion(totalQuestion, minimumRange, maximumRange);
+
+    document.getElementById("question").innerHTML = displayQuestion();
+    // for(let i = 0; i < totalQuestion; i++){
+    //     console.log(displayQuestion());
+    //     const answer = +readline.question('Enter an answer: '); //input
+    //     checkResult(answer);
+    //     currentQuestion++;
+    // }
+
+    // printFinalResult() //output
+}
+
+function next() {
+    let answer = parseInt(document.getElementById("answer").value);
+
+    if(currentQuestion === totalQuestion - 1){
+        checkResult(answer);
+        printFinalResult();
+    } else{
+        checkResult(answer);
+        currentQuestion++;
+        document.getElementById("question").innerHTML = displayQuestion();
+
+    }
+    
+}
+
+
+function printFinalResult() {
+    let correct = 0;
+    let wrong = 0;
+
+    for(key in answerHistory){
+        if(answerHistory[key]){
+            correct++;
+        } else{
+            wrong++;
+        }
+    }
+
+    document.getElementById("quizPage").style.display = "none";
+    document.getElementById("resultPage").style.display = "block";
+
+    document.getElementById("correct").innerHTML = "BENAR: " + correct;
+    document.getElementById("wrong").innerHTML = "SALAH: " + wrong;
+}
+
+function tableResult() {
+    let html = "";
+
+    for(let i = 0; i < questionList.length; i++){
+        html += `
+            <tr>
+               <td>${i + 1}</td>
+                <td>${questionList[i]}</td>
+               <td>${answerHistory[questionList[i]]}</td>
+            </tr>
+        `;
+    }
+
+    document.getElementById("tableQuestion").innerHTML = html;
+
+    document.getElementById("resultPage").style.display = "none";
+    document.getElementById("tableResult").style.display = "block";
+} -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// let totalPage = 0;
+// let currentPage = 1;
+
+// function mulai(){
+
+//     totalPage = parseInt(document.getElementById("jumlah").value);
+
+//     if(isNaN(totalPage) || totalPage <= 0){
+//         alert("Masukkan angka yang benar!");
+//         return;
+//     }
+
+//     currentPage = 1;
+
+//     tampilkan();
+
+// }
+
+// function tampilkan(){
+
+//     document.getElementById("page").innerHTML =
+//         "HALAMAN " + currentPage;
+
+//     document.getElementById("status").innerHTML =
+//         "Halaman " + currentPage + " dari " + totalPage;
+
+// }
+
+// function next(){
+
+//     if(currentPage < totalPage){
+
+//         currentPage++;
+
+//         tampilkan();
+
+//     }else{
+
+//         alert("Sudah halaman terakhir.");
+
+//     }
+
+// }
+
+// function back(){
+
+//     if(currentPage > 1){
+
+//         currentPage--;
+
+//         tampilkan();
+
+//     }else{
+
+//         alert("Sudah halaman pertama.");
+
+//     }
+
+// }
+
+<!-- </script> -->
+
+</body>
+</html>
