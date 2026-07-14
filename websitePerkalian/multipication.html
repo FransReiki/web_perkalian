@@ -88,21 +88,11 @@ th{
 
 <div id="startPage">
 
-    <h2>Masukkan Jumlah Soal</h2>
-
-    <input type="number" id="totalQuestion" min="1">
-    
-    <hr>
-
-    <h2>Masukkan Rentang Perkalian</h2>
-    <p>contoh: 2 - 9</p>
-    <input type="number" id="minimumRange">
-    <span> - </span>
-    <input type="number" id="maximumRange" min="1">
+    <button onclick="controlPanelPembagian()">Mulai Pembagian</button>
 
     <hr>
 
-    <button onclick="controlPanel()">Mulai</button>
+    <button onclick="controlPanelPerkalian()">Mulai Perkalian</button>
 
     <!-- <button onclick="back()">⬅ Back</button>
 
@@ -140,7 +130,7 @@ th{
 
 <button onclick="restart()">Main Lagi</button>
 </div>
- <script type="module" src="main.js"></script>
+ <script src="main.js"></script>
 
 </body>
 </html>
