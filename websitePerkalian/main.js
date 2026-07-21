@@ -1,203 +1,114 @@
-let questionList = []; //isinya [[first factor, second factor, correct answer]]
-let worksheet = []; //isinya [[soal, jawaban siswa]]
-let repeatQuestionHistory = []; //isinya [[soal 1, jawaban, jawaban benar, true/false]]
-let answerHistory = []; //isinya [[soal 1, jawaban, jawaban benar, true/false], [soal 2, jawaban, jawaban benar, true/false] ]
+let mathEquations = [];  // Isinya [[first factor, second factor, correct answer]]
+let multiplicationWorksheet = []; // Soal, answer siswa, true/false
+let repeatQuestionWorksheet = [];  // Soal, answer siswa, true/false
 let currentQuestion = 0;
-let isRepeatQuestionStatus = false;
-let totalQuestion = 0;
+let totalQuestion = 0; // Menghitung akumulasi seluruh soal yang dikerjakan
+let repeatStatus = false;
+let batchOfRepeatQuestion = -1;
+let currentWorksheetLength = 0; // Pembantu untuk batas akhir indeks tiap babak
+
+function generateQuestion(startFrom) {
+    // Ditambahkan 'let' agar variabel loop tidak bocor ke global scope
+    for (let firstFactor = startFrom; firstFactor <= 10; firstFactor++) {
+        let tempQuestion = [];
+        for (let secondFactor = firstFactor; secondFactor <= 10; secondFactor++) {
+            let result = firstFactor * secondFactor;
+            tempQuestion.push([firstFactor, secondFactor, result]);
+        }
+        mathEquations.push(tempQuestion);
+    }
+
+    for (let i = 0; i < mathEquations.length; i++) {
+        let tempLength = mathEquations[i].length;
+        for (let j = 0; j < tempLength; j++) {
+            let question = `${mathEquations[i][j][0]} x ${mathEquations[i][j][1]}`;
+            let reverseQuestion = `${mathEquations[i][j][1]} x ${mathEquations[i][j][0]}`;
+            let tempQuestion = [question, reverseQuestion];
+            let randomNum = Math.floor(Math.random() * 2);
+            multiplicationWorksheet.push([tempQuestion[randomNum]]);
+            totalQuestion++; // Menghitung soal babak utama
+        }
+    }
+}
+
+function checkResult(worksheetResult) {
+    for (let i = 0; i < worksheetResult.length; i++) {
+        // Hanya jalankan pengecekan jika data true/false belum dimasukkan (panjang masih 2)
+        if (worksheetResult[i].length === 2) {
+            let tempQuestion = worksheetResult[i][0];
+            let tempSplit = tempQuestion.split(' ');
+            let check = tempSplit[0] * tempSplit[2];
+            let result = check === worksheetResult[i][1];
+            worksheetResult[i].push(result);
+        }
+    }
+}
 
 function restart() {
     location.reload();
 }
-
-function generateQuestion() {
-    let firstFactor;
-    let secondFactor;
-
-    questionList = [];
-    worksheet = [];
-    totalQuestion = 0;
-    currentQuestion = 0;
-
-    for (firstFactor = 0; firstFactor <= 10; firstFactor++) {
-        let repeatFactor = [];
-        for (secondFactor = firstFactor; secondFactor <= 10; secondFactor++) {
-            let result = firstFactor * secondFactor
-            repeatFactor.push([firstFactor, secondFactor, result]);
+function isRepeatQuestion(worksheetResult) {
+    for (let i = 0; i < worksheetResult.length; i++) {
+        if (worksheetResult[i][2] === false) {
+            return true;
         }
-        questionList.push(repeatFactor);
     }
+    return false;
+}
 
-    for (let i = 0; i <= 10; i++) {
-        let tempLength = questionList[i].length
-        for (let j = 0; j < tempLength; j++) {
-            let question = `${questionList[i][j][0]} x ${questionList[i][j][1]}`  //nanti yang ditampilkan
-            // currentQuestion = result;
-            worksheet.push([question]);
-            totalQuestion++;
+function generateRepeatQuestion(worksheetResult) {
+    let tempFalseAns = [];
+    let tempQuestionList = [];
+    for (let i = 0; i < worksheetResult.length; i++) {
+        if (worksheetResult[i][2] === false) {
+            tempFalseAns.push(worksheetResult[i]);
         }
     }
 
+    for (let i = 0; i < tempFalseAns.length; i++) {
+        let tempSplit = tempFalseAns[i][0].split(' ');
+        let question = `${tempSplit[0]} x ${tempSplit[2]}`;
+        let reverseQuestion = `${tempSplit[2]} x ${tempSplit[0]}`;
+        let pickQuestion = [question, reverseQuestion];
+        let randomNum = Math.floor(Math.random() * 2);
+        tempQuestionList.push([pickQuestion[randomNum]]);
+        totalQuestion++; // Menghitung soal remedial tambahan
+    }
+    repeatQuestionWorksheet.push(tempQuestionList);
+    batchOfRepeatQuestion++;
 }
 
 function displayQuestion() {
-    let question = worksheet[currentQuestion][0];
-    return question;
+    if (repeatStatus) {
+        return repeatQuestionWorksheet[batchOfRepeatQuestion][currentQuestion][0];
+    } else {
+        return multiplicationWorksheet[currentQuestion][0];
+    }
 }
 
 function inputAnswer(answer) {
-    worksheet[currentQuestion].push(answer)
-}
-
-function findAnswerKey(worksheet) {
-    let status = false;
-    let rowCheck;
-    let indexCheck;
-
-    if (isRepeatQuestionStatus) { //kalau ada pengulangan
-        let startIndex = totalQuestion - (worksheet.length - totalQuestion);
-        if (startIndex < 0 || startIndex >= worksheet.length) startIndex = 0;
-
-        for (let index = startIndex; index < worksheet.length; index++) {
-            if (worksheet[index].length < 2) continue;
-
-            let question = worksheet[index][0].split(' ')
-            let firstFactor = question[0];
-            let secondFactor = question[2];
-
-            for (let i = 0; i <= 10; i++) {//mencari di questionList
-                let tempLength = questionList[i].length;
-                for (let j = 0; j < tempLength; j++) {
-                    if (questionList[i][j][0] === Number(firstFactor) && questionList[i][j][1] === Number(secondFactor)) {
-                        rowCheck = i;
-                        indexCheck = j;
-                        status = true;
-                        break;
-                    }
-                    status = false;
-                }
-                if (status) break;
-            }
-            let answer = worksheet[index][1]
-            checkResult(rowCheck, indexCheck, answer)
-        }
-
-    } else { //kalau gaada perulangan
-        for (let index = 0; index < worksheet.length; index++) {
-            if (worksheet[index].length < 2) continue;
-
-            let question = worksheet[index][0].split(' ')
-            let firstFactor = question[0];
-            let secondFactor = question[2];
-
-            for (let i = 0; i <= 10; i++) {
-                let tempLength = questionList[i].length;
-                for (let j = 0; j < tempLength; j++) {
-                    if (questionList[i][j][0] === Number(firstFactor) && questionList[i][j][1] === Number(secondFactor)) {
-                        rowCheck = i;
-                        indexCheck = j;
-                        status = true;
-                        break;
-                    }
-                    status = false;
-                }
-                if (status) break;
-            }
-            let answer = worksheet[index][1]
-            checkResult(rowCheck, indexCheck, answer)
-        }
+    if (repeatStatus) {
+        repeatQuestionWorksheet[batchOfRepeatQuestion][currentQuestion].push(answer);
+    } else {
+        multiplicationWorksheet[currentQuestion].push(answer);
     }
-
-
-}
-function checkResult(rowCheck, indexCheck, answer) {
-    let tempQuestion = `${questionList[rowCheck][indexCheck][0]} x ${questionList[rowCheck][indexCheck][1]}`
-    let correctAnswer = questionList[rowCheck][indexCheck][2]
-    let isCorrect = (answer === correctAnswer);
-
-    if (isRepeatQuestionStatus) { //kalau ada pengulangan
-        repeatQuestionHistory.push([tempQuestion, answer, correctAnswer, isCorrect]);
-    } else { //kalau gaada perulangan
-        answerHistory.push([tempQuestion, answer, correctAnswer, isCorrect]);
-    }
-
-
 }
 
 function controlPanelPerkalian() {
     document.getElementById("startPage").style.display = "none";
     document.getElementById("quizPage").style.display = "block";
-    generateQuestion();
+    generateQuestion(2);
+
+    // Set batas panjang kuis utama pertama kali
+    currentWorksheetLength = multiplicationWorksheet.length;
+
     document.getElementById("question").innerHTML = displayQuestion();
-    // printFinalResult() //output
 
     let answerInput = document.getElementById("answer");
     if (answerInput) answerInput.focus();
 }
 
-function isRepeatQuestion() {
-    let wrongAnswer = 0;
-
-    if (repeatQuestionHistory.length === 0) {
-        for (let i = 0; i < answerHistory.length; i++) {
-            let result = answerHistory[i][3];
-            if (result === false) {
-                wrongAnswer++;
-            }
-        }
-        if (wrongAnswer === 0) {
-            isRepeatQuestionStatus = false;
-            return false;
-        } else {
-            isRepeatQuestionStatus = true;
-            return true;
-        }
-    } else {
-        for (let i = 0; i < repeatQuestionHistory.length; i++) {
-            let result = repeatQuestionHistory[i][3];
-            if (result === false) {
-                wrongAnswer++;
-            }
-        }
-        if (wrongAnswer === 0) {
-            isRepeatQuestionStatus = false;
-            return false;
-        } else {
-            isRepeatQuestionStatus = true;
-            return true;
-        }
-    }
-
-}
-
-function generateRepeatQuestion() {
-    if (repeatQuestionHistory.length === 0) {
-        for (let i = 0; i < answerHistory.length; i++) {
-            let result = answerHistory[i][3];
-            if (result === false) {
-                let question = answerHistory[i][0]
-                worksheet.push([question]);
-                totalQuestion++;
-            }
-
-        }
-    } else {
-        let tempHistory = [...repeatQuestionHistory];
-        repeatQuestionHistory = [];
-
-        for (let i = 0; i < tempHistory.length; i++) {
-            let result = tempHistory[i][3];
-            if (result === false) {
-                let question = tempHistory[i][0]
-                worksheet.push([question]);
-                totalQuestion++;
-            }
-        }
-    }
-
-}
-
-function next() { //next selama current question belum mencapai totalquestion dia bakal next question, tapi ketika sudah mendekati total question dia bakal menjalankan is repeat question?
+function next() {
     let answerInput = document.getElementById("answer");
     let answer = parseInt(answerInput.value);
     if (isNaN(answer)) {
@@ -208,20 +119,31 @@ function next() { //next selama current question belum mencapai totalquestion di
     inputAnswer(answer);
     answerInput.value = "";
 
-    if (currentQuestion === totalQuestion - 1) {
-        findAnswerKey(worksheet);
-        if (isRepeatQuestion()) {
-            generateRepeatQuestion();
-            currentQuestion++;
+    // Tentukan worksheet mana yang sedang dikerjakan user saat ini
+    let activeWorksheet = repeatStatus ? repeatQuestionWorksheet[batchOfRepeatQuestion] : multiplicationWorksheet;
+
+    // JIKA USER SUDAH MENCAPAI UJUNG ARRAY BATCH SAAT INI
+    if (currentQuestion === currentWorksheetLength - 1) {
+        checkResult(activeWorksheet);
+
+        if (isRepeatQuestion(activeWorksheet)) {
+            generateRepeatQuestion(activeWorksheet);
+
+            // Aktifkan mode repeat dan reset indeks soal kembali ke 0
+            repeatStatus = true;
+            currentQuestion = 0;
+
+            // Perbarui batas akhir kuis mengikuti jumlah soal remedi yang baru dibuat
+            currentWorksheetLength = repeatQuestionWorksheet[batchOfRepeatQuestion].length;
+
+            alert("Ada jawaban yang salah. Mari ulangi soal yang salah!");
             document.getElementById("question").innerHTML = displayQuestion();
             if (answerInput) answerInput.focus();
         } else {
-            document.getElementById("question").innerHTML = "Selesai! Semua jawaban benar.";
             printFinalResult();
-            //kalau gaada soal yang salah
         }
-        // kalau sudah halaman terakhir
     } else {
+        // JIKA BELUM SOAL TERAKHIR, LANJUT KE INDEKS BERIKUTNYA
         currentQuestion++;
         document.getElementById("question").innerHTML = displayQuestion();
         if (answerInput) answerInput.focus();
@@ -229,9 +151,25 @@ function next() { //next selama current question belum mencapai totalquestion di
 }
 
 function printFinalResult() {
-    console.log(answerHistory);
+    // Menyembunyikan elemen input UI dan menampilkan total statistik akhir di layar HTML
+    document.getElementById("answer").style.display = "none";
+
+    // Cari tombol di dalam quizPage dan sembunyikan
+    let nextButton = document.querySelector("#quizPage button");
+    if (nextButton) nextButton.style.display = "none";
+
+    document.getElementById("question").innerHTML = `
+        Selesai! Semua jawaban sudah benar.<br><br>
+        <span style="font-size: 18px; font-weight: normal;">
+            Total seluruh soal yang kamu kerjakan (termasuk remedi): <strong>${totalQuestion}</strong> soal.
+        </span>
+    `;
+
+    console.log("Kuis Selesai!");
+    console.log(`Total soal dikerjakan: ${totalQuestion}`);
 }
 
+// Otomatisasi tombol enter agar langsung mentrigger fungsi next() tanpa harus klik tombol di layar
 document.addEventListener("DOMContentLoaded", () => {
     let answerInput = document.getElementById("answer");
     if (answerInput) {
@@ -244,4 +182,3 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
-
