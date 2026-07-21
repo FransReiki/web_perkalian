@@ -1,136 +1,115 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Loop Halaman</title>
- 
-<style>
-body{
-    font-family: Arial, sans-serif;
-    background:#f2f2f2;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loop Halaman</title>
 
-#startPage{
-    background:white;
-    width:500px;
-    padding:30px;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,.2);
-    text-align:center;
-}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-#quizPage{
-    background:white;
-    width:500px;
-    padding:30px;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,.2);
-    text-align:center;
-}
+        #startPage,
+        #quizPage,
+        #resultPage,
+        #tableResultPage {
+            background: white;
+            width: 500px;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, .2);
+            text-align: center;
+        }
 
-#resultPage{
-    background:white;
-    width:500px;
-    padding:30px;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,.2);
-    text-align:center;
-}
+        input {
+            width: 100px;
+            padding: 8px;
+            font-size: 18px;
+        }
 
-input{
-    width:100px;
-    padding:8px;
-    font-size:18px;
-}
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
 
-button{
-    padding:10px 20px;
-    margin:10px;
-    cursor:pointer;
-    font-size:16px;
-}
+        #page {
+            margin-top: 30px;
+            font-size: 30px;
+            font-weight: bold;
+        }
 
-#page{
-    margin-top:30px;
-    font-size:30px;
-    font-weight:bold;
-}
+        #status {
+            margin-top: 10px;
+            color: gray;
+        }
 
-#status{
-    margin-top:10px;
-    color:gray;
-}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
 
-table{
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
+        th,
+        td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: center;
+        }
 
-th, td{
-    border: 1px solid black;
-    padding: 10px;
-    text-align: center;
-}
-
-th{
-    background-color: #f2f2f2;
-}
-</style>
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
 
 </head>
+
 <body>
 
-<div id="startPage">
+    <div id="startPage">
+        <!-- Mengganti fungsi langsung ke handler pembagian mandiri -->
+        <button onclick="controlPanelPembagianLangsung()">Mulai Pembagian</button>
+        <hr>
+        <button onclick="controlPanelPerkalian()">Mulai Perkalian</button>
+    </div>
 
-    <button onclick="controlPanelPembagian()">Mulai Pembagian</button>
+    <div id="quizPage" style="display:none;">
+        <h1 id="question">halo ini halaman soal</h1>
+        <input type="number" id="answer">
+        <button onclick="next()">Enter</button>
+    </div>
 
-    <hr>
+    <div id="resultPage" style="display:none;">
+        <h1 id="correct"></h1>
+        <h1 id="wrong"></h1>
+        <button onclick="restart()">Main Lagi</button>
+        <button onclick="tableResult()">Lihat Tabel Hasil</button>
+    </div>
 
-    <button onclick="controlPanelPerkalian()">Mulai Perkalian</button>
+    <!-- PERBAIKAN: Membungkus seluruh halaman tabel + tombol ke dalam ID yang sama -->
+    <div id="tableResultPage" style="display:none;">
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Soal</th>
+                    <th>Jawaban</th>
+                </tr>
+            </thead>
+            <tbody id="tableQuestion"></tbody>
+        </table>
+        <button onclick="restart()">Main Lagi</button>
+    </div>
 
-    <!-- <button onclick="back()">⬅ Back</button>
-
-    <button onclick="next()">Next ➡</button> -->
-
-</div>
-
-<div id="quizPage" style="display:none;">
-
-    <h1 id="question">halo ini halaman soal</h1>
-    <input type="number" id="answer">
-    <button onclick="next()">Enter</button>
-
-</div>
-
-
-<div id="resultPage" style="display:none;">
-    <h1 id="correct"></h1>
-    <h1 id="wrong"></h1>
-    <button onclick="restart()">Main Lagi</button>
-    <button onclick="tableResult()">Lihat Tabel Hasil</button>
-</div>
-
-<div id="tableResult" style="display:none;">
-    <table border="1">
-    <thead>
-        <tr>
-            <th>No</th>
-            <th>Soal</th>
-            <th>Jawaban</th>
-        </tr>
-    </thead>
-    <tbody id="tableQuestion"></tbody>
-</table>
-
-<button onclick="restart()">Main Lagi</button>
-</div>
- <script src="main.js"></script>
-
+    <script src="main.js"></script>
 </body>
+
 </html>

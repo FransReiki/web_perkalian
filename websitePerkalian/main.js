@@ -1,57 +1,84 @@
-let mathEquations = [];  // Isinya [[first factor, second factor, correct answer]]
-let multiplicationWorksheet = []; // Soal, answer siswa, true/false
-let repeatQuestionWorksheet = [];  // Soal, answer siswa, true/false
+let mathEquations = [];
+let multiplicationWorksheet = [];
+let divisionWorksheet = [];
+let repeatQuestionWorksheet = [];
+
 let currentQuestion = 0;
-let totalQuestion = 0; // Menghitung akumulasi seluruh soal yang dikerjakan
+let totalQuestion = 0;
 let repeatStatus = false;
 let batchOfRepeatQuestion = -1;
-let currentWorksheetLength = 0; // Pembantu untuk batas akhir indeks tiap babak
+let currentWorksheetLength = 0;
+
+let currentSession = "multiplication";
+let startTime;
 
 function generateQuestion(startFrom) {
-    // Ditambahkan 'let' agar variabel loop tidak bocor ke global scope
+    mathEquations = [];
     for (let firstFactor = startFrom; firstFactor <= 10; firstFactor++) {
-        let tempQuestion = [];
         for (let secondFactor = firstFactor; secondFactor <= 10; secondFactor++) {
             let result = firstFactor * secondFactor;
-            tempQuestion.push([firstFactor, secondFactor, result]);
+            mathEquations.push([firstFactor, secondFactor, result]);
         }
-        mathEquations.push(tempQuestion);
     }
 
+    let tempMultPool = [];
+    let tempDivPool = [];
+
     for (let i = 0; i < mathEquations.length; i++) {
-        let tempLength = mathEquations[i].length;
-        for (let j = 0; j < tempLength; j++) {
-            let question = `${mathEquations[i][j][0]} x ${mathEquations[i][j][1]}`;
-            let reverseQuestion = `${mathEquations[i][j][1]} x ${mathEquations[i][j][0]}`;
-            let tempQuestion = [question, reverseQuestion];
-            let randomNum = Math.floor(Math.random() * 2);
-            multiplicationWorksheet.push([tempQuestion[randomNum]]);
-            totalQuestion++; // Menghitung soal babak utama
+        let f1 = mathEquations[i][0];
+        let f2 = mathEquations[i][1];
+        let res = mathEquations[i][2];
+
+        let qMult1 = `${f1} x ${f2}`;
+        let qMult2 = `${f2} x ${f1}`;
+        let pickMult = [qMult1, qMult2];
+        tempMultPool.push(pickMult[Math.floor(Math.random() * 2)]);
+
+        tempDivPool.push(`${res} : ${f1}`);
+        if (f1 !== f2) {
+            tempDivPool.push(`${res} : ${f2}`);
         }
+    }
+
+    for (let i = tempMultPool.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [tempMultPool[i], tempMultPool[j]] = [tempMultPool[j], tempMultPool[i]];
+    }
+
+    for (let i = tempDivPool.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [tempDivPool[i], tempDivPool[j]] = [tempDivPool[j], tempDivPool[i]];
+    }
+
+    for (let i = 0; i < tempMultPool.length; i++) {
+        multiplicationWorksheet.push([tempMultPool[i]]);
+    }
+    for (let i = 0; i < tempDivPool.length; i++) {
+        divisionWorksheet.push([tempDivPool[i]]);
     }
 }
 
 function checkResult(worksheetResult) {
     for (let i = 0; i < worksheetResult.length; i++) {
-        // Hanya jalankan pengecekan jika data true/false belum dimasukkan (panjang masih 2)
         if (worksheetResult[i].length === 2) {
             let tempQuestion = worksheetResult[i][0];
+            let studentAnswer = worksheetResult[i][1];
             let tempSplit = tempQuestion.split(' ');
-            let check = tempSplit[0] * tempSplit[2];
-            let result = check === worksheetResult[i][1];
+
+            let angka1 = parseInt(tempSplit[0]);
+            let operator = tempSplit[1];
+            let angka2 = parseInt(tempSplit[2]);
+
+            let correctAnswer = operator === "x" ? (angka1 * angka2) : (angka1 / angka2);
+            let result = correctAnswer === studentAnswer;
             worksheetResult[i].push(result);
         }
     }
 }
 
-function restart() {
-    location.reload();
-}
 function isRepeatQuestion(worksheetResult) {
     for (let i = 0; i < worksheetResult.length; i++) {
-        if (worksheetResult[i][2] === false) {
-            return true;
-        }
+        if (worksheetResult[i][2] === false) return true;
     }
     return false;
 }
@@ -61,18 +88,17 @@ function generateRepeatQuestion(worksheetResult) {
     let tempQuestionList = [];
     for (let i = 0; i < worksheetResult.length; i++) {
         if (worksheetResult[i][2] === false) {
-            tempFalseAns.push(worksheetResult[i]);
+            tempFalseAns.push(worksheetResult[i][0]);
         }
     }
 
+    for (let i = tempFalseAns.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [tempFalseAns[i], tempFalseAns[j]] = [tempFalseAns[j], tempFalseAns[i]];
+    }
+
     for (let i = 0; i < tempFalseAns.length; i++) {
-        let tempSplit = tempFalseAns[i][0].split(' ');
-        let question = `${tempSplit[0]} x ${tempSplit[2]}`;
-        let reverseQuestion = `${tempSplit[2]} x ${tempSplit[0]}`;
-        let pickQuestion = [question, reverseQuestion];
-        let randomNum = Math.floor(Math.random() * 2);
-        tempQuestionList.push([pickQuestion[randomNum]]);
-        totalQuestion++; // Menghitung soal remedial tambahan
+        tempQuestionList.push([tempFalseAns[i]]);
     }
     repeatQuestionWorksheet.push(tempQuestionList);
     batchOfRepeatQuestion++;
@@ -82,30 +108,68 @@ function displayQuestion() {
     if (repeatStatus) {
         return repeatQuestionWorksheet[batchOfRepeatQuestion][currentQuestion][0];
     } else {
-        return multiplicationWorksheet[currentQuestion][0];
+        return currentSession === "multiplication"
+            ? multiplicationWorksheet[currentQuestion][0]
+            : divisionWorksheet[currentQuestion][0];
     }
 }
 
 function inputAnswer(answer) {
+    totalQuestion++;
     if (repeatStatus) {
         repeatQuestionWorksheet[batchOfRepeatQuestion][currentQuestion].push(answer);
     } else {
-        multiplicationWorksheet[currentQuestion].push(answer);
+        if (currentSession === "multiplication") {
+            multiplicationWorksheet[currentQuestion].push(answer);
+        } else {
+            divisionWorksheet[currentQuestion].push(answer);
+        }
     }
+}
+
+function formatWaktu(dateObj) {
+    let jam = String(dateObj.getHours()).padStart(2, '0');
+    let menit = String(dateObj.getMinutes()).padStart(2, '0');
+    let detik = String(dateObj.getSeconds()).padStart(2, '0');
+    return `${jam}:${menit}:${detik}`;
 }
 
 function controlPanelPerkalian() {
     document.getElementById("startPage").style.display = "none";
     document.getElementById("quizPage").style.display = "block";
+
+    startTime = new Date();
     generateQuestion(2);
 
-    // Set batas panjang kuis utama pertama kali
+    currentSession = "multiplication";
     currentWorksheetLength = multiplicationWorksheet.length;
 
-    document.getElementById("question").innerHTML = displayQuestion();
+    document.getElementById("question").innerHTML = `<h3>Sesi 1: Perkalian</h3>` + displayQuestion();
 
     let answerInput = document.getElementById("answer");
     if (answerInput) answerInput.focus();
+}
+
+function controlPanelDivision() {
+    repeatStatus = false;
+    repeatQuestionWorksheet = [];
+    batchOfRepeatQuestion = -1;
+    currentQuestion = 0;
+
+    currentSession = "division";
+    currentWorksheetLength = divisionWorksheet.length;
+
+    document.getElementById("answer").style.display = "inline-block";
+    let nextButton = document.querySelector("#quizPage button");
+    if (nextButton) nextButton.style.display = "inline-block";
+
+    document.getElementById("question").innerHTML = `<h3>Sesi 2: Pembagian</h3>` + displayQuestion();
+
+    let answerInput = document.getElementById("answer");
+    if (answerInput) {
+        answerInput.value = "";
+        answerInput.focus();
+    }
 }
 
 function next() {
@@ -119,66 +183,126 @@ function next() {
     inputAnswer(answer);
     answerInput.value = "";
 
-    // Tentukan worksheet mana yang sedang dikerjakan user saat ini
-    let activeWorksheet = repeatStatus ? repeatQuestionWorksheet[batchOfRepeatQuestion] : multiplicationWorksheet;
+    let activeWorksheet = repeatStatus ? repeatQuestionWorksheet[batchOfRepeatQuestion] : (currentSession === "multiplication" ? multiplicationWorksheet : divisionWorksheet);
 
-    // JIKA USER SUDAH MENCAPAI UJUNG ARRAY BATCH SAAT INI
     if (currentQuestion === currentWorksheetLength - 1) {
         checkResult(activeWorksheet);
 
         if (isRepeatQuestion(activeWorksheet)) {
             generateRepeatQuestion(activeWorksheet);
 
-            // Aktifkan mode repeat dan reset indeks soal kembali ke 0
             repeatStatus = true;
             currentQuestion = 0;
-
-            // Perbarui batas akhir kuis mengikuti jumlah soal remedi yang baru dibuat
             currentWorksheetLength = repeatQuestionWorksheet[batchOfRepeatQuestion].length;
 
             alert("Ada jawaban yang salah. Mari ulangi soal yang salah!");
-            document.getElementById("question").innerHTML = displayQuestion();
+            let title = currentSession === "multiplication" ? "Sesi 1: Perkalian (Remedi)" : "Sesi 2: Pembagian (Remedi)";
+            document.getElementById("question").innerHTML = `<h3>${title}</h3>` + displayQuestion();
             if (answerInput) answerInput.focus();
         } else {
-            printFinalResult();
+            if (currentSession === "multiplication") {
+                document.getElementById("answer").style.display = "none";
+                let nextButton = document.querySelector("#quizPage button");
+                if (nextButton) nextButton.style.display = "none";
+
+                document.getElementById("question").innerHTML = `
+                    <p style="color: green; font-weight: bold;">Sesi Perkalian Selesai dengan Sempurna!</p>
+                    <button onclick="controlPanelDivision()" style="font-size: 18px; padding: 10px 20px;">Lanjut ke Sesi Pembagian</button>
+                `;
+            } else {
+                printFinalResult();
+            }
         }
     } else {
-        // JIKA BELUM SOAL TERAKHIR, LANJUT KE INDEKS BERIKUTNYA
         currentQuestion++;
-        document.getElementById("question").innerHTML = displayQuestion();
+        let title = currentSession === "multiplication" ? "Sesi 1: Perkalian" : "Sesi 2: Pembagian";
+        if (repeatStatus) title += " (Remedi)";
+        document.getElementById("question").innerHTML = `<h3>${title}</h3>` + displayQuestion();
         if (answerInput) answerInput.focus();
     }
 }
 
 function printFinalResult() {
-    // Menyembunyikan elemen input UI dan menampilkan total statistik akhir di layar HTML
-    document.getElementById("answer").style.display = "none";
+    let endTime = new Date();
 
-    // Cari tombol di dalam quizPage dan sembunyikan
+    document.getElementById("answer").style.display = "none";
     let nextButton = document.querySelector("#quizPage button");
     if (nextButton) nextButton.style.display = "none";
 
+    let totalDetik = Math.floor((endTime - startTime) / 1000);
+    let menitDurasi = Math.floor(totalDetik / 60);
+    let detikDurasi = totalDetik % 60;
+
     document.getElementById("question").innerHTML = `
-        Selesai! Semua jawaban sudah benar.<br><br>
-        <span style="font-size: 18px; font-weight: normal;">
-            Total seluruh soal yang kamu kerjakan (termasuk remedi): <strong>${totalQuestion}</strong> soal.
+        <h2>🎉 Selesai! Semua Kuis Berhasil Dikerjakan 🎉</h2>
+        <p>Hebat! Kamu telah menyelesaikan babak Perkalian dan Pembagian dengan benar.</p>
+        <span style="font-size: 18px; font-weight: normal; line-height: 1.6;">
+            Waktu Mulai: <strong>${formatWaktu(startTime)}</strong><br>
+            Waktu Selesai: <strong>${formatWaktu(endTime)}</strong><br>
+            Durasi Pengerjaan: <strong>${menitDurasi} menit ${detikDurasi} detik</strong><br>
+            Total Soal Dikerjakan (termasuk remedi): <strong>${totalQuestion}</strong> soal.
         </span>
     `;
-
-    console.log("Kuis Selesai!");
-    console.log(`Total soal dikerjakan: ${totalQuestion}`);
 }
 
-// Otomatisasi tombol enter agar langsung mentrigger fungsi next() tanpa harus klik tombol di layar
 document.addEventListener("DOMContentLoaded", () => {
     let answerInput = document.getElementById("answer");
     if (answerInput) {
         answerInput.focus();
         answerInput.addEventListener("keydown", function (event) {
             if (event.key === "Enter") {
-                event.preventDefault();
-                next();
+                let activeButton = document.querySelector("#quizPage button");
+                if (activeButton && activeButton.style.display !== "none") {
+                    event.preventDefault();
+                    next();
+                }
             }
         });
     }
 });
+
+// Tambahkan ini di main.js agar tombol "Mulai Pembagian" di awal bisa langsung bekerja
+function controlPanelPembagianLangsung() {
+    document.getElementById("startPage").style.display = "none";
+    document.getElementById("quizPage").style.display = "block";
+    startTime = new Date();
+    generateQuestion(2);
+    controlPanelDivision();
+}
+
+// Update fungsi ini di main.js agar ID-nya merujuk ke tableResultPage
+function tableResult() {
+    document.getElementById("resultPage").style.display = "none";
+    document.getElementById("tableResultPage").style.display = "block"; // ID Terbarui
+
+    let tableBody = document.getElementById("tableQuestion");
+    tableBody.innerHTML = "";
+
+    let no = 1;
+    multiplicationWorksheet.forEach(item => {
+        if (item[1] !== undefined) {
+            tableBody.innerHTML += `<tr><td>${no++}</td><td>${item[0]}</td><td>${item[1]} (${item[2] ? 'Benar' : 'Salah'})</td></tr>`;
+        }
+    });
+    divisionWorksheet.forEach(item => {
+        if (item[1] !== undefined) {
+            tableBody.innerHTML += `<tr><td>${no++}</td><td>${item[0]}</td><td>${item[1]} (${item[2] ? 'Benar' : 'Salah'})</td></tr>`;
+        }
+    });
+}
+
+// Update fungsi ini di main.js agar ikut mereset halaman tabel baru
+function restart() {
+    currentQuestion = 0;
+    totalQuestion = 0;
+    correctCount = 0;
+    wrongCount = 0;
+    repeatStatus = false;
+    batchOfRepeatQuestion = -1;
+    repeatQuestionWorksheet = [];
+
+    document.getElementById("resultPage").style.display = "none";
+    document.getElementById("tableResultPage").style.display = "none"; // ID Terbarui
+    document.getElementById("startPage").style.display = "block";
+}
+
