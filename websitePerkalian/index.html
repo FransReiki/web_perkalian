@@ -41,15 +41,10 @@
             font-size: 16px;
         }
 
-        #page {
-            margin-top: 30px;
-            font-size: 30px;
+        #progress {
+            font-size: 18px;
             font-weight: bold;
-        }
-
-        #status {
-            margin-top: 10px;
-            color: gray;
+            margin-bottom: 10px;
         }
 
         table {
@@ -66,23 +61,47 @@
         }
 
         th {
-            background-color: #f2f2f2;
+            background: #f2f2f2;
         }
-    </style>
+        #restartButton {
+    position: absolute;
+    top: 15px;
+    right: 15px;
 
+    padding: 6px 12px;
+    font-size: 14px;
+
+    background: #ff4d4d;
+    color: white;
+
+    border: none;
+    border-radius: 6px;
+
+    cursor: pointer;
+}
+
+#restartButton:hover {
+    background: #d93636;
+}
+    </style>
 </head>
 
 <body>
 
     <div id="startPage">
-        <!-- Mengganti fungsi langsung ke handler pembagian mandiri -->
         <button onclick="controlPanelPembagianLangsung()">Mulai Pembagian</button>
         <hr>
         <button onclick="controlPanelPerkalian()">Mulai Perkalian</button>
     </div>
 
     <div id="quizPage" style="display:none;">
-        <h1 id="question">halo ini halaman soal</h1>
+        <button id="restartButton" onclick="restart()">
+            ⟳ Restart
+        </button>
+
+        <div id="progress"></div>
+        <div id="question"></div>
+
         <input type="number" id="answer">
         <button onclick="next()">Enter</button>
     </div>
@@ -94,22 +113,24 @@
         <button onclick="tableResult()">Lihat Tabel Hasil</button>
     </div>
 
-    <!-- PERBAIKAN: Membungkus seluruh halaman tabel + tombol ke dalam ID yang sama -->
     <div id="tableResultPage" style="display:none;">
-        <table border="1">
+        <table>
             <thead>
                 <tr>
                     <th>No</th>
                     <th>Soal</th>
                     <th>Jawaban</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody id="tableQuestion"></tbody>
         </table>
+    
         <button onclick="restart()">Main Lagi</button>
     </div>
 
     <script src="main.js"></script>
+
 </body>
 
 </html>
