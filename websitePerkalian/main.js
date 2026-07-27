@@ -14,6 +14,8 @@ let currentSession = "multiplication";
 let totalQuestion = 0;          // Total soal yang harus dikerjakan (termasuk remedi)
 let answeredQuestion = 0;       // Jumlah soal yang sudah dijawab
 
+let currentProgress = 0;
+
 let startTime;
 
 function generateQuestion(startFrom) {
@@ -152,10 +154,10 @@ function controlPanelPerkalian() {
     currentWorksheetLength = multiplicationWorksheet.length;
 
     totalQuestion = currentWorksheetLength;
-    answeredQuestion = 0;
+    currentProgress = 0;
 
     document.getElementById("progress").innerHTML =
-        `${answeredQuestion}/${totalQuestion} Soal`;
+        `${currentProgress}/${totalQuestion} Soal`;
 
     document.getElementById("question").innerHTML =
         `<h3>Sesi 1: Perkalian</h3>` + displayQuestion();
@@ -174,7 +176,7 @@ function controlPanelDivision() {
     currentWorksheetLength = divisionWorksheet.length;
 
     totalQuestion = currentWorksheetLength;
-    answeredQuestion = 0;
+    currentProgress = 0;
 
     document.getElementById("answer").style.display = "inline-block";
 
@@ -182,7 +184,7 @@ function controlPanelDivision() {
     if (nextButton) nextButton.style.display = "inline-block";
 
     document.getElementById("progress").innerHTML =
-        `${answeredQuestion}/${totalQuestion} Soal`;
+        `${currentProgress}/${totalQuestion} Soal`;
 
     document.getElementById("question").innerHTML =
         `<h3>Sesi 2: Pembagian</h3>` + displayQuestion();
@@ -206,10 +208,8 @@ function next() {
     }
 
     inputAnswer(answer);
+    currentProgress++;
     answerInput.value = "";
-
-    document.getElementById("progress").innerHTML =
-        `${answeredQuestion}/${totalQuestion} Soal`;
 
     let activeWorksheet = repeatStatus
         ? repeatQuestionWorksheet[batchOfRepeatQuestion]
@@ -231,18 +231,18 @@ function next() {
             currentWorksheetLength =
                 repeatQuestionWorksheet[batchOfRepeatQuestion].length;
 
-            // Tambah total soal
+            // Tambahkan jumlah soal remedi
             totalQuestion += currentWorksheetLength;
+
+            // Progress tetap di soal terakhir
+            document.getElementById("progress").innerHTML =
+                `${answeredQuestion}/${totalQuestion} Soal`;
 
             alert("Ada jawaban yang salah. Mari ulangi soal yang salah!");
 
             let title = currentSession === "multiplication"
                 ? "Sesi 1: Perkalian (Remedi)"
                 : "Sesi 2: Pembagian (Remedi)";
-
-            // Progress sekarang menjadi misalnya 45/55
-            document.getElementById("progress").innerHTML =
-                `${answeredQuestion}/${totalQuestion} Soal`;
 
             document.getElementById("question").innerHTML =
                 `<h3>${title}</h3>` + displayQuestion();
@@ -257,7 +257,7 @@ function next() {
 
                 document.getElementById("answer").style.display = "none";
 
-                let nextButton = document.querySelector("#quizPage button");
+                let nextButton = document.getElementById("nextButton");
                 if (nextButton) nextButton.style.display = "none";
 
                 document.getElementById("question").innerHTML = `
@@ -283,45 +283,50 @@ function next() {
 
         currentQuestion++;
 
+        document.getElementById("progress").innerHTML =
+            `${answeredQuestion}/${totalQuestion} Soal`;
+
         let title = currentSession === "multiplication"
             ? "Sesi 1: Perkalian"
             : "Sesi 2: Pembagian";
 
         if (repeatStatus) title += " (Remedi)";
 
-        document.getElementById("progress").innerHTML =
-            `${answeredQuestion}/${totalQuestion} Soal`;
-
         document.getElementById("question").innerHTML =
             `<h3>${title}</h3>` + displayQuestion();
 
         answerInput.focus();
-
     }
+
     saveProgress();
 }
 
 function printFinalResult() {
     let endTime = new Date();
 
-    document.getElementById("answer").style.display = "none";
-    let nextButton = document.querySelector("#quizPage button");
-    if (nextButton) nextButton.style.display = "none";
-
     let totalDetik = Math.floor((endTime - startTime) / 1000);
     let menitDurasi = Math.floor(totalDetik / 60);
     let detikDurasi = totalDetik % 60;
 
-    document.getElementById("question").innerHTML = `
-        <h2>🎉 Selesai! Semua Kuis Berhasil Dikerjakan 🎉</h2>
-        <p>Hebat! Kamu telah menyelesaikan babak Perkalian dan Pembagian dengan benar. Harap Kasih Tau Papi</p>
-        <span style="font-size: 18px; font-weight: normal; line-height: 1.6;">
-            Waktu Mulai: <strong>${formatWaktu(startTime)}</strong><br>
-            Waktu Selesai: <strong>${formatWaktu(endTime)}</strong><br>
-            Durasi Pengerjaan: <strong>${menitDurasi} menit ${detikDurasi} detik</strong><br>
-            Total Soal Dikerjakan (termasuk remedi): <strong>${answeredQuestion}</strong> soal.
-        </span>
+    // Sembunyikan halaman kuis
+    document.getElementById("quizPage").style.display = "none";
+
+    // Tampilkan halaman hasil
+    document.getElementById("resultPage").style.display = "block";
+
+    // Isi hasil
+    document.getElementById("correct").innerHTML = `
+        🎉 Selesai! 🎉<br><br>
+
+        Waktu Mulai: <strong>${formatWaktu(startTime)}</strong><br>
+        Waktu Selesai: <strong>${formatWaktu(endTime)}</strong><br>
+        Durasi: <strong>${menitDurasi} menit ${detikDurasi} detik</strong><br>
+        Total Soal: <strong>${answeredQuestion}</strong> soal
     `;
+
+    document.getElementById("wrong").innerHTML =
+        "Silakan pilih <b>Lihat Tabel Hasil</b> atau <b>Main Lagi</b>.";
+
     localStorage.removeItem("quizProgress");
 }
 
@@ -503,4 +508,15 @@ function loadProgress() {
     startTime = new Date(data.startTime);
 
     return true;
+}
+
+function backToResult() {
+    document.getElementById("tableResultPage").style.display = "none";
+    document.getElementById("resultPage").style.display = "block";
+}
+
+function debugResult() {
+    startTime = new Date(Date.now() - 1000 * 60 * 15);
+    answeredQuestion = 57;
+    printFinalResult();
 }
