@@ -1,0 +1,147 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #e6ecf5;
+    display: flex;
+    flex-direction: column;
+    /* Membuat elemen tersusun berurutan ke bawah */
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding-top: 20px;
+    /* Memberi sedikit jarak dari batas paling atas browser */
+}
+
+#Rectangle {
+    width: 200px;
+    height: 100px;
+    background: #4a90e2;
+    /* Tambahan warna background biru agar kotaknya terlihat */
+    color: white;
+    /* Warna teks putih */
+    font-weight: bold;
+    border-radius: 8px;
+
+    /* Mengatur teks Satria & Rainheart agar pas di tengah-tengah kotak */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+
+    /* STRATEGI KETENGAH: Hapus float, gunakan margin auto */
+    margin: 0 auto 20px auto;
+    /* Atas: 0, Kanan: auto, Bawah: 20px, Kiri: auto */
+}
+
+/* Kotak pembungkus utama untuk setiap halaman */
+#startPage,
+#quizPage,
+#resultPage,
+#tableResultPage {
+    background: white;
+    width: 500px;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Input angka jawaban */
+input {
+    width: 120px;
+    padding: 10px;
+    font-size: 18px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+    text-align: center;
+}
+
+/* Gaya tombol umum */
+button {
+    padding: 10px 20px;
+    margin: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #f9f9f9;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #e0e0e0;
+}
+
+/* Garis pembatas horizontal */
+hr {
+    border: 0;
+    height: 1px;
+    background: #eee;
+    margin: 20px 0;
+}
+
+/* Info progress soal */
+#progress {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 15px;
+    /* Jarak atas agar tidak menempel dengan tombol restart */
+    margin-bottom: 15px;
+}
+
+/* Teks soal perkalian/pembagian */
+#question {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Pengaturan tabel hasil */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+th,
+td {
+    border: 1px solid #ddd;
+    /* Garis abu-abu tipis agar terlihat modern */
+    padding: 12px;
+    text-align: center;
+}
+
+th {
+    background: #f2f2f2;
+    font-weight: bold;
+}
+
+/* --- BAGIAN FLOAT DAN CLEARFIX --- */
+
+/* Tombol restart dipojokkan ke kanan */
+#restartButton {
+    float: right;
+    padding: 6px 12px;
+    font-size: 14px;
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 0;
+    /* Reset margin bawaan tombol */
+}
+
+#restartButton:hover {
+    background: #d93636;
+}
+
+/* Rumus Clearfix standard untuk membersihkan efek float */
+.clearfix::after {
+    content: "";
+    display: table;
+    clear: both;
+}

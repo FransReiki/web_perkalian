@@ -209,6 +209,7 @@ function next() {
 
     inputAnswer(answer);
     currentProgress++;
+    answeredQuestion++; // PERBAIKAN: Sinkronisasi penambahan jumlah soal terjawab
     answerInput.value = "";
 
     let activeWorksheet = repeatStatus
@@ -254,9 +255,9 @@ function next() {
             if (currentSession === "multiplication") {
 
                 document.getElementById("progress").innerHTML = "";
-
                 document.getElementById("answer").style.display = "none";
 
+                // PERBAIKAN: Menyembunyikan tombol menggunakan ID yang sesuai dengan HTML baru
                 let nextButton = document.getElementById("nextButton");
                 if (nextButton) nextButton.style.display = "none";
 
@@ -300,6 +301,7 @@ function next() {
 
     saveProgress();
 }
+
 
 function printFinalResult() {
     let endTime = new Date();
@@ -399,7 +401,7 @@ function tableResult() {
     let no = 1;
 
     multiplicationWorksheet.forEach(item => {
-        if (item[1] !== undefined) {
+        if (item !== undefined) { // PERBAIKAN: Validasi data array baris kuis
             tableBody.innerHTML += `
                 <tr>
                     <td>${no++}</td>
@@ -412,7 +414,7 @@ function tableResult() {
     });
 
     divisionWorksheet.forEach(item => {
-        if (item[1] !== undefined) {
+        if (item !== undefined) { // PERBAIKAN: Validasi data array baris kuis
             tableBody.innerHTML += `
                 <tr>
                     <td>${no++}</td>
@@ -424,6 +426,7 @@ function tableResult() {
         }
     });
 }
+
 
 // Update fungsi ini di main.js agar ikut mereset halaman tabel baru
 function restart() {
@@ -443,6 +446,7 @@ function restart() {
     // Reset progress
     totalQuestion = 0;
     answeredQuestion = 0;
+    currentProgress = 0; // Menambahkan reset untuk progress tracker Anda
 
     startTime = null;
 
@@ -458,12 +462,14 @@ function restart() {
     answerInput.value = "";
     answerInput.style.display = "inline-block";
 
-    let nextButton = document.querySelector("#quizPage button");
+    // PERBAIKAN: Memastikan tombol Enter muncul kembali dengan ID yang akurat
+    let nextButton = document.getElementById("nextButton");
     if (nextButton) {
         nextButton.style.display = "inline-block";
     }
     localStorage.removeItem("quizProgress");
 }
+
 
 function saveProgress() {
     const data = {
